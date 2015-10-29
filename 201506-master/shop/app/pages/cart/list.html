@@ -1,0 +1,60 @@
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading clearfix">
+                    <div class="pull-left">
+                        查看购物车
+                    </div>
+                </div>
+                <div class="panel body">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <td>名称</td>
+                            <td>价格</td>
+                            <td>图片</td>
+                            <td>数量</td>
+                            <td>金额</td>
+                            <td>操作</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="cart in carts">
+                            <td>{{cart.ware.name}}</td>
+                            <td>{{cart.ware.price}}</td>
+                            <td><img style="width:100px;height:80px" ng-src="{{cart.ware.img}}" alt=""/></td>
+                            <td><input type="text" class="form-control" ng-model="cart.num"  /></td>
+                            <td>{{cart.num*cart.ware.price}}</td>
+                            <td class="text-center">
+                                <button data-index="{{$index}}" class="btn btn-danger" delete-carts>删除</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer">
+                        总金额{{total()}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="deleteDialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>友情提示</h4>
+            </div>
+            <div class="modal-body">
+              请问你是否要删除{{cart.ware.name}}?
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" ng-click="delete()" data-dismiss="modal">删除</button>
+                <button class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

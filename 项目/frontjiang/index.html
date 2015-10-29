@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html ng-app="appModule">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="../bower_components/jquery/dist/jquery.js"></script>
+    <script src="../bower_components/angular/angular.js"></script>
+    <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.css"/>
+
+</head>
+<body>
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <a href="">前端江湖</a>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">前端江湖</div>
+                <div class="panel-body" ng-controller="RoomCtrl">
+                    <div class="list-group">
+                        <div class="list-group-item" ng-repeat="message in messages track by $index">
+                            匿名: {{message}}
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <form action="" role="form" ng-controller="MessageCtrl">
+                        <div class="form-group">
+                           <textarea required name="newMessage" class="form-control"
+                                     ng-model="newMessage" ng-click="createMessage()"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    var app = angular.module('appModule',[]);
+    app.run(function(socket){
+    });
+    app.factory('socket',function($rootScope){
+        var socket = io();
+        return {
+            on:function(event,callback){
+                socket.on(event,function(){
+                    var args = arguments;
+                    $rootScope.$apply(function(){
+                        callback.apply(socket,args);
+                    });
+                });
+            },
+            emit:function(event,data){
+                socket.emit(event,data);
+            }
+        }
+    });
+    app.controller('RoomCtrl',function($scope,socket){
+        $scope.messages = [];
+        socket.on('allMessages',function(messages){
+            $scope.messages = messages;
+        });
+        socket.emit('getAllMessages');
+        socket.on('message',function(message){
+            $scope.messages.push(message);
+        });
+    });
+    app.controller('MessageCtrl',function($rootScope,$scope,socket){
+        $scope.createMessage = function(){
+            socket.emit('message',$scope.newMessage);
+            $scope.newMessage = '';
+        }
+    });
+    app.directive('autoScroll',function(){
+        return {
+            link:function(scope,element,attrs){
+                scope.$watch(function(){
+                    return element.children().length;
+                },function(){
+                    element.animate({
+                        scrollTop:element.prop('scrollHeight')
+                    },300);
+                });
+            }
+        }
+    });
+    app.directive('ctrlEnterNewLine',function(){
+        return function(scope,element,attrs){
+            var ctrlDown = false;
+            element.bind('keydown',function(event){
+                if(event.which == 17){
+                    ctrlDown = true;
+                    setTimeout(function(){
+                        ctrlDown = false;
+                    },1000);
+                }else if(event.which == 13){
+                    if(ctrlDown){
+                        element.val(element.val()+'\n');
+                    }else{
+                        scope.$apply(function(){
+                            scope.$eval(attrs.ctrlEnterNewLine);
+                        })
+                        event.preventDefault();
+                    }
+                }
+            });
+        }
+    });
+</script>
+<script src="front.js"></script>
+<script src="js/services/socket.js"></script>
+<script src="js/controllers/MessageCtrl.js"></script>
+<script src="js/controllers/RoomCtrl.js"></script>
+<script src="js/directives/autoScroll.js"></script>
+<script src="js/directives/ctrlEnterNewLine.js"></script>
+</html>

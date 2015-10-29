@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="appModule">
+<head>
+    <meta charset="UTF-8">
+    <title>红利商城</title>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+    <link rel="stylesheet" href="public/lib/bootstrap/dist/css/bootstrap.css"/>
+</head>
+<body>
+<nav class="navbar navbar-default" role="navigation" ng-controller="NavBarCtrl">
+    <div class="navbar-header">
+        <a href="#/home" class="navbar-brand">红利</a>
+    </div>
+    <ul class="nav navbar-nav">
+        <li ng-show="me" ng-class="{active:isActive('/home')}"><a href="#/home">首页</a></li>
+        <li ng-hide="me" ng-class="{active:isActive('/users/reg')}"><a href="#/users/reg">注册</a></li>
+        <li ng-hide="me" ng-class="{active:isActive('/users/login')}"><a href="#/users/login">登陆</a></li>
+        <li ng-show="me" ng-class="{active:isActive('/wares/list')}"><a href="#/wares/list">浏览商品</a></li>
+        <li ng-show="me" ng-class="{active:isActive('/wares/admin/list')}"><a href="#/wares/admin/list">商品管理</a></li>
+        <li ng-show="me" ng-class="{active:isActive('/carts/list')}"><a href="#/carts/list">购物车</a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right" ng-show="me">
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">{{me.username}}</a>
+            <ul class="dropdown-menu dropdown-menu-left">
+                <li><a href="#" ng-click="logout()">退出</a></li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+
+
+<div ng-view></div>
+</body>
+<script src="public/lib/jquery/dist/jquery.js"></script>
+<script src="public/lib/bootstrap/dist/js/bootstrap.js"></script>
+<script src="public/lib/angular/angular.js"></script>
+<script src="public/lib/angular-route/angular-route.js"></script>
+<script>
+    var app = angular.module('appModule',['ngRoute']);
+    app.run(function($rootScope,$location,$http){
+        $http({
+            url:'/users/validate',
+            method:'POST'
+        }).success(function(data){
+            if(data.code == 1){
+                $rootScope.me = data.user;
+                $location.path('/');
+            }else{
+                $location.path('/users/login');
+            }
+        }).error(function(){
+            $location.path('/users/login');
+        });
+    });
+    app.config(function($routeProvider){
+        $routeProvider.when('/home',{
+            templateUrl:'pages/home.html',
+            controller:'HomeCtrl'
+        }).when('/users/reg',{
+            templateUrl:'pages/user/reg.html',
+            controller:'RegCtrl'
+        }).when('/users/login',{
+            templateUrl:'pages/user/login.html',
+            controller:'LoginCtrl'
+        }).when('/wares/admin/list',{
+            templateUrl:'pages/ware/admin/list.html',
+            controller:'WareCtrl'
+        }).when('/wares/list',{
+            templateUrl:'pages/ware/list.html',
+            controller:'WareCtrl'
+        }).when('/carts/list',{
+            templateUrl:'pages/cart/list.html',
+            controller:'CartCtrl'
+        }).otherwise({
+            redirectTo:'/users/login'
+        });
+    });
+    app.controller('NavBarCtrl',function($rootScope,$scope,$location,$http){
+        $scope.isActive = function(path){
+            return path == $location.path();
+        }
+        $scope.logout = function(){
+            $http({
+                url:'/users/logout',
+                method:'POST'
+            }).success(function(){
+                $rootScope.me = null;
+                $location.path('/users/login');
+            });
+        }
+    });
+    app.controller('HomeCtrl',function(){
+
+    });
+    app.controller('RegCtrl',function($scope,$http,$location){
+        $scope.user = {};
+        $scope.save = function(){
+            $http({
+                url:'/users/reg',
+                method:'POST',
+                data:$scope.user
+            }).success(function(data){
+                if(data.code == 1)
+                    $location.path('/users/login');
+                else
+                    alert('注册失败，请重新填写');
+            }).error(function(){
+
+            })
+            return false;;
+        }
+
+    });
+    app.controller('LoginCtrl',function($rootScope,$scope,$http,$location){
+        $scope.user = {};
+        $scope.login = function(){
+            $http({
+                url:'/users/login',
+                method:'POST',
+                data:$scope.user
+            }).success(function(data){
+                if(data.code == 1){
+                    $rootScope.me = data.user;
+                    $location.path('/');
+                }
+                else
+                    alert('登陆失败，请重新填写');
+            }).error(function(){
+
+            })
+            return false;
+        }
+    });
+    app.directive('addWares',function(){
+        return {
+            link:function(scope,element,attrs){
+                element.click(function(){
+                    $('#addDialog').modal(true);
+                });
+            }
+        }
+    });
+    app.controller('WareCtrl',function($scope,$http){
+        $scope.ware = {};
+        $scope.wares = [];
+        $http({
+            url:'/wares/list',
+            method:'GET'
+        }).success(function(data){
+            if(data.code == 1){
+                $scope.wares = data.wares;
+            }
+        });
+        $scope.save = function(){
+            $http({
+                url:'/wares/add',
+                method:'POST',
+                data:$scope.ware
+            }).success(function(data){
+                if(data.code == 1){
+                    $scope.wares.push(data.ware);
+                }
+            });
+        }
+
+        //添加购物车
+        $scope.addCart = function(wareId){
+            $http({
+                url:'/wares/addCart/'+wareId,
+                method:'GET'
+            }).success(function(data){
+                if(data.code == 1){
+
+                }
+            });
+        }
+    });
+    app.controller('CartCtrl',function($scope,$http){
+        $scope.carts = [];
+        $http({
+            url:'/carts/list',
+            method:'GET'
+        }).success(function(data){
+            if(data.code == 1){
+                $scope.carts = data.carts;
+            }
+        });
+        $scope.total = function(){
+            var total = 0;
+            $scope.carts.forEach(function(cart){
+                total+=cart.num*cart.ware.price;
+            });
+            return total;
+        }
+        $scope.delete = function(){
+            $scope.carts = $scope.carts.filter(function(cart){
+                return cart._id != $scope.cart._id;
+            });
+        }
+    });
+app.directive('deleteCarts',function(){
+    return {
+        link:function(scope,element,attrs){
+            element.click(function(){
+                scope.$apply(function(){
+                    scope.$parent.cart = scope.carts[element.attr('data-index')];
+                });
+
+                $('#deleteDialog').modal(true);
+            });
+        }
+    }
+});
+</script>
+</html>

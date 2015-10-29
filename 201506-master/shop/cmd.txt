@@ -1,0 +1,10 @@
+1.初始化项目描述文件
+npm init
+2.初始化bower
+bower init
+3. 安装express并添加到依赖列表
+npm install express --save
+4.安装前端框架 angular bootstrap
+bower install bootstrap --save
+bower install angular --save
+bower install angular-route --save

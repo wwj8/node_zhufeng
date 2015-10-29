@@ -1,0 +1,26 @@
+{
+  "name": "frontjiang",
+  "version": "1.0",
+  "homepage": "https://github.com/wwj8/frontjiang.git",
+  "description": "frontjiang",
+  "keywords": [
+    "angular",
+    "nodejs",
+    "express"
+  ],
+  "authors": [
+    "wwj-t510"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.5",
+    "angular": "~1.4.3"
+  }
+}
